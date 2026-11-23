@@ -9,6 +9,7 @@
 #include <QStyle>
 #include <QWidgetAction>
 #include <QKeySequence>
+#include <functional>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     setWindowTitle("ExoTV Modern 1.1");
