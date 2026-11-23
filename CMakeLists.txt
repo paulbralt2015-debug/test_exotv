@@ -5,10 +5,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
-
 find_package(Qt6 6.6 REQUIRED COMPONENTS Widgets Multimedia)
-find_package(FFMPEG REQUIRED COMPONENTS AVCODEC AVFORMAT AVUTIL SWSCALE SWRESAMPLE)
-
+find_package(unofficial-ffmpeg CONFIG REQUIRED)
 qt_add_executable(ExoTVModern WIN32
     src/main.cpp
     src/MainWindow.h src/MainWindow.cpp
@@ -16,10 +14,13 @@ qt_add_executable(ExoTVModern WIN32
     src/AudioOutput.h src/AudioOutput.cpp
     src/VideoWidget.h src/VideoWidget.cpp
 )
-target_include_directories(ExoTVModern PRIVATE ${FFMPEG_INCLUDE_DIRS})
 target_link_libraries(ExoTVModern PRIVATE
     Qt6::Widgets Qt6::Multimedia
-    ${FFMPEG_LIBRARIES}
+    unofficial::ffmpeg::avcodec
+    unofficial::ffmpeg::avformat
+    unofficial::ffmpeg::avutil
+    unofficial::ffmpeg::swscale
+    unofficial::ffmpeg::swresample
 )
 if(MSVC)
   target_compile_options(ExoTVModern PRIVATE /W4 /permissive-)
