@@ -76,8 +76,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
         totalDuration_ = seconds;
         position_->setEnabled(seconds > 0.0);
     });
-    connect(&engine_, &VideoEngine::errorOccurred, this, [this](const QString &e){ QMessageBox::critical(this,"Erreur média",e); });
-    connect(&engine_, &VideoEngine::playbackFinished, this, [this]{ status_->setText("Lecture terminée."); });
+    connect(&engine_, &VideoEngine::errorOccurred, this, [this](const QString &e){
+        engine_.stop();
+        QMessageBox::critical(this,"Erreur média",e);
+    });
+    connect(&engine_, &VideoEngine::playbackFinished, this, [this]{
+        engine_.stop();
+        status_->setText("Lecture terminée.");
+    });
 }
 void MainWindow::openFile() {
     const QString path = QFileDialog::getOpenFileName(this,"Ouvrir une vidéo",{},
