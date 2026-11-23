@@ -6,7 +6,7 @@
 #include <QMutex>
 #include <QWaitCondition>
 #include <QByteArray>
-
+#include <cstdint>
 class AudioOutput final : public QObject {
     Q_OBJECT
 public:
