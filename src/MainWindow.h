@@ -5,6 +5,7 @@
 #include <QAction>
 #include "VideoEngine.h"
 #include "VideoWidget.h"
+
 class MainWindow final : public QMainWindow {
     Q_OBJECT
 public:
