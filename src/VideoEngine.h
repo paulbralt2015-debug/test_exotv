@@ -1,12 +1,10 @@
 #pragma once
 #include <QObject>
 #include <QImage>
-#include <QThread>
-#include <atomic>
 #include <QString>
-
+#include <atomic>
+#include <thread>
 class AudioOutput;
-
 class VideoEngine final : public QObject {
     Q_OBJECT
 public:
@@ -18,7 +16,9 @@ public:
     void stop();
     void seek(double seconds);
     double duration() const;
-    bool isPaused() const { return paused_; }
+    bool isPaused() const { return paused_.load(); }
+    bool isRunning() const { return running_.load(); }
+    void setVolume(float volume);
 signals:
     void frameReady(const QImage &frame);
     void positionChanged(double seconds);
