@@ -30,6 +30,9 @@ void VideoEngine::play() {
     if (path_.isEmpty()) return;
     if (running_) { paused_ = false; return; }
     if (worker_.joinable()) worker_.join();
+    // QAudioSink is created on the GUI thread; the decoder thread only feeds its PCM queue.
+    if (!audio_->start(48000, 2))
+        emit errorOccurred("La sortie audio Windows par défaut ne prend pas en charge le PCM 48 kHz stéréo.");
     running_ = true;
     paused_ = false;
     worker_ = std::thread(&VideoEngine::decodeLoop, this);
@@ -110,10 +113,6 @@ void VideoEngine::decodeLoop() {
                                  outputRate, ac->channel_layout, ac->sample_fmt, ac->sample_rate, 0, nullptr);
 #endif
         if (swr && swr_init(swr) < 0) swr_free(&swr);
-        if (swr && !audio_->start(outputRate, outputChannels)) {
-            swr_free(&swr);
-            emit errorOccurred("Le périphérique audio Windows ne prend pas en charge le format PCM demandé.");
-        }
     }
     AVPacket *pkt = av_packet_alloc();
     AVFrame *frame = av_frame_alloc();
@@ -167,7 +166,6 @@ void VideoEngine::decodeLoop() {
         av_packet_unref(pkt);
     }
     running_ = false;
-    audio_->stop();
     av_frame_free(&frame);
     av_packet_free(&pkt);
     if (swr) swr_free(&swr);
