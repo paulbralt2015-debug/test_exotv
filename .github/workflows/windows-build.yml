@@ -4,14 +4,11 @@ on:
     branches: [ main, master ]
   pull_request:
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: windows-2022
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
@@ -20,32 +17,29 @@ jobs:
           target: desktop
           arch: win64_msvc2022_64
           cache: true
-
-      - name: Configure
-        run: >
-          cmake -S . -B build -A x64
-          -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
-          -DVCPKG_TARGET_TRIPLET=x64-windows
-          -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR"
-
+      - name: Configure Qt and FFmpeg
+        shell: pwsh
+        run: |
+          cmake -S . -B build -A x64 "-DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" "-DVCPKG_TARGET_TRIPLET=x64-windows" "-DVCPKG_MANIFEST_MODE=ON" "-DCMAKE_PREFIX_PATH=$env:QT_ROOT_DIR"
       - name: Build
         run: cmake --build build --config Release --parallel
-
-      - name: Deploy Qt runtime
+      - name: Deploy Qt and FFmpeg runtime
         shell: pwsh
         run: |
           $exe = Get-ChildItem build -Recurse -Filter ExoTVModern.exe | Select-Object -First 1
           if (-not $exe) { throw "ExoTVModern.exe not found" }
           windeployqt --release --compiler-runtime $exe.FullName
-
+          $ffmpegBin = Join-Path $PWD "vcpkg_installed/x64-windows/bin"
+          if (Test-Path $ffmpegBin) { Copy-Item (Join-Path $ffmpegBin "*.dll") $exe.Directory.FullName -Force }
+          else { throw "FFmpeg runtime directory not found: $ffmpegBin" }
       - name: Package
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path package | Out-Null
           $exe = Get-ChildItem build -Recurse -Filter ExoTVModern.exe | Select-Object -First 1
+          if (-not $exe) { throw "ExoTVModern.exe not found for packaging" }
+          New-Item -ItemType Directory -Force -Path package | Out-Null
           Copy-Item (Join-Path $exe.Directory.FullName "*") package -Recurse -Force
           Compress-Archive -Path package/* -DestinationPath ExoTVModern-Windows-x64.zip -Force
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
