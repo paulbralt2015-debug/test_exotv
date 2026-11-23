@@ -65,6 +65,11 @@ void VideoWidget::rebuildProcessedFrame() {
         return;
     }
 
+    if (brightness_ == 0 && contrast_ == 100 && saturation_ == 100 && !inverse_) {
+        processedFrame_ = frame_;
+        return;
+    }
+
     processedFrame_ = frame_.convertToFormat(QImage::Format_ARGB32);
     const double contrast = contrast_ / 100.0;
     const double saturation = saturation_ / 100.0;
