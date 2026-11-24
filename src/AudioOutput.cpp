@@ -35,7 +35,8 @@ bool AudioOutput::start() {
     stopping_ = false;
     device_ = new QueueDevice(this);
     device_->open(QIODevice::ReadOnly);
-    if (!sink_->start(device_)) {
+    sink_->start(device_);
+    if (sink_->error() != QAudio::NoError) {
         delete sink_;
         sink_ = nullptr;
         device_->close();
