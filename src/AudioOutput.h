@@ -7,6 +7,8 @@
 #include <QWaitCondition>
 #include <QByteArray>
 #include <cstdint>
+class QueueDevice;
+
 class AudioOutput final : public QObject {
     Q_OBJECT
 public:
@@ -17,6 +19,7 @@ public:
     void stop();
     void setVolume(float volume);
 private:
+    friend class QueueDevice;
     QAudioSink *sink_ = nullptr;
     QIODevice *device_ = nullptr;
     QByteArray queue_;
