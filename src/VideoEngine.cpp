@@ -132,14 +132,15 @@ void VideoEngine::decodeLoop() {
 #if LIBAVUTIL_VERSION_MAJOR >= 57
         AVChannelLayout outputLayout;
         av_channel_layout_default(&outputLayout, outputChannels);
-        AVChannelLayout inputLayout = ac->ch_layout;
-        if (inputLayout.nb_channels == 0)
-            av_channel_layout_default(&inputLayout, ac->ch_layout.nb_channels > 0 ? ac->ch_layout.nb_channels : 2);
+        AVChannelLayout inputLayout{};
+        if (ac->ch_layout.nb_channels > 0)
+            av_channel_layout_copy(&inputLayout, &ac->ch_layout);
+        else
+            av_channel_layout_default(&inputLayout, 2);
         const int swrResult = swr_alloc_set_opts2(&swr, &outputLayout, outputSampleFormat, outputRate,
                                                    &inputLayout, ac->sample_fmt, ac->sample_rate, 0, nullptr);
         av_channel_layout_uninit(&outputLayout);
-        if (inputLayout.nb_channels != ac->ch_layout.nb_channels || ac->ch_layout.nb_channels == 0)
-            av_channel_layout_uninit(&inputLayout);
+        av_channel_layout_uninit(&inputLayout);
         if (swrResult < 0) swr = nullptr;
 #else
         const int64_t outLayout = av_get_default_channel_layout(outputChannels);
