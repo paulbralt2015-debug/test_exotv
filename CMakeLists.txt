@@ -8,7 +8,14 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 6.6 REQUIRED COMPONENTS Widgets Multimedia)
-find_package(FFMPEG REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET
+    libavcodec
+    libavformat
+    libavutil
+    libswscale
+    libswresample
+)
 
 qt_add_executable(ExoTVModern WIN32
     src/main.cpp
@@ -18,12 +25,10 @@ qt_add_executable(ExoTVModern WIN32
     src/VideoWidget.h src/VideoWidget.cpp
 )
 
-target_include_directories(ExoTVModern PRIVATE ${FFMPEG_INCLUDE_DIRS})
-target_link_directories(ExoTVModern PRIVATE ${FFMPEG_LIBRARY_DIRS})
 target_link_libraries(ExoTVModern PRIVATE
     Qt6::Widgets
     Qt6::Multimedia
-    ${FFMPEG_LIBRARIES}
+    PkgConfig::FFMPEG
 )
 
 if(MSVC)
