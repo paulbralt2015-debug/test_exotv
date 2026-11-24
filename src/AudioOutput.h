@@ -18,6 +18,7 @@ public:
     void writePcm(const uint8_t *data, int bytes);
     void stop();
     void setVolume(float volume);
+    qint64 readQueuedData(char *data, qint64 maxSize);
 private:
     friend class QueueDevice;
     QAudioSink *sink_ = nullptr;
