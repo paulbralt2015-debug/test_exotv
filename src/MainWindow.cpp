@@ -3,6 +3,7 @@
 #include <QMessageBox>
 #include <QToolBar>
 #include <QMenuBar>
+#include <QMenu>
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QSlider>
