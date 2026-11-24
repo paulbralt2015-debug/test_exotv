@@ -42,7 +42,7 @@ jobs:
           $exe = Get-ChildItem build -Recurse -Filter ExoTVModern.exe | Select-Object -First 1
           if (-not $exe) { throw "ExoTVModern.exe not found" }
           windeployqt --release --compiler-runtime $exe.FullName
-          $ffmpegBin = Join-Path $PWD "vcpkg_installed/x64-windows/bin"
+          $ffmpegBin = Join-Path $PWD "build/vcpkg_installed/x64-windows/bin"
           if (Test-Path $ffmpegBin) { Copy-Item (Join-Path $ffmpegBin "*.dll") $exe.Directory.FullName -Force }
           else { throw "FFmpeg runtime directory not found: $ffmpegBin" }
       - name: Package
