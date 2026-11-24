@@ -4,6 +4,11 @@ on:
     branches: [ main, master ]
   pull_request:
   workflow_dispatch:
+
+concurrency:
+  group: exotv-windows-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: windows-2022
@@ -18,6 +23,13 @@ jobs:
           arch: win64_msvc2022_64
           modules: qtmultimedia
           cache: true
+      - name: Verify Qt Multimedia installation
+        shell: pwsh
+        run: |
+          $qtMultimedia = Join-Path $env:QT_ROOT_DIR "lib/cmake/Qt6Multimedia/Qt6MultimediaConfig.cmake"
+          if (-not (Test-Path $qtMultimedia)) {
+            throw "Qt Multimedia is missing. The qtmultimedia module must be installed by install-qt-action."
+          }
       - name: Configure Qt and FFmpeg
         shell: pwsh
         run: |
