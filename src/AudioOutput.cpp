@@ -57,14 +57,18 @@ void AudioOutput::stop() {
 void AudioOutput::setVolume(float v) { if (sink_) sink_->setVolume(qBound(0.0f, v, 1.0f)); }
 
 qint64 QueueDevice::readData(char *data, qint64 maxSize) {
-    QMutexLocker lock(&owner_->mutex_);
-    if (owner_->queue_.isEmpty() && !owner_->stopping_)
-        owner_->ready_.wait(&owner_->mutex_, 20);
-    const qint64 n = qMin(maxSize, qint64(owner_->queue_.size()));
+    return owner_->readQueuedData(data, maxSize);
+}
+
+qint64 AudioOutput::readQueuedData(char *data, qint64 maxSize) {
+    QMutexLocker lock(&mutex_);
+    if (queue_.isEmpty() && !stopping_)
+        ready_.wait(&mutex_, 20);
+    const qint64 n = qMin(maxSize, qint64(queue_.size()));
     if (n > 0) {
-        std::memcpy(data, owner_->queue_.constData(), size_t(n));
-        owner_->queue_.remove(0, int(n));
-    } else if (owner_->stopping_) {
+        std::memcpy(data, queue_.constData(), size_t(n));
+        queue_.remove(0, int(n));
+    } else if (stopping_) {
         return 0;
     } else {
         std::memset(data, 0, size_t(maxSize));
