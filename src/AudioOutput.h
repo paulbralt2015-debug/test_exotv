@@ -14,7 +14,8 @@ class AudioOutput final : public QObject {
 public:
     explicit AudioOutput(QObject *parent = nullptr);
     ~AudioOutput() override;
-    bool start(int sampleRate, int channels);
+    bool start();
+    QAudioFormat format() const;
     void writePcm(const uint8_t *data, int bytes);
     void stop();
     void setVolume(float volume);
@@ -23,8 +24,10 @@ private:
     friend class QueueDevice;
     QAudioSink *sink_ = nullptr;
     QIODevice *device_ = nullptr;
+    QAudioFormat format_;
     QByteArray queue_;
     QMutex mutex_;
     QWaitCondition ready_;
     bool stopping_ = false;
+    float volume_ = 1.0f;
 };
